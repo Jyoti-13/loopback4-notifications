@@ -1,60 +1,77 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Binding, BindingKey, Component, inject, ProviderMap} from '@loopback/core';
+import {Binding, Component, inject, ProviderMap} from '@loopback/core';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import {NotificationBindings} from './keys';
 import {NotificationProvider} from './providers';
-import {NodemailerBindings, SESBindings} from './providers/email';
-import {FcmBindings, PubnubBindings, PubnubConfig} from './providers/push';
+import {NodemailerBindings} from './providers/email/nodemailer';
+import {SES, SESBindings} from './providers/email/ses';
+import {FcmBindings} from './providers/push/fcm';
+import { PubnubBindings, PubnubConfig} from './providers/push/pubnub';
 import {SocketBindings, SocketConfig} from './providers/push/socketio';
-import {SNSBindings} from './providers/sms/sns';
-
+import {SNS, SNSBindings} from './providers/sms/sns';
+import * as admin from './providers/push/fcm/types'
 
 export class NotificationsComponent implements Component {
+
   constructor(
     @inject(NodemailerBindings.Config,{optional:false})
-    private readonly nodemailerBindings : BindingKey<any>,
+    private readonly nodemailerBindings : SMTPTransport.Options | null,
     @inject(SESBindings.Config)
-    private sesBindings: BindingKey<any>,
+    private sesBindings: SES.Types.ClientConfiguration | null,
     @inject(PubnubBindings.Config)
-    private pubnubBindings : BindingKey<PubnubConfig | null>,
+    private pubnubBindings : PubnubConfig | null,
     @inject(FcmBindings.Config)
-    private fcmBindings: BindingKey<any>,
+    private fcmBindings: admin.app.App | null,
     @inject(SocketBindings.Config)
-    private socketBindings: BindingKey<SocketConfig | null>,
+    private socketBindings: SocketConfig | null,
     @inject(SNSBindings.Config)
-    private snsBindings: BindingKey<any>
+    private snsBindings: SNS.ClientConfiguration | null
   ) {
-    if(nodemailerBindings.toString()=== 'sf.notification.config.nodemailer'){
-      //Dynamic calling of nodemailer file
-      //./providers/email/nodemailer
-    }
-    if(sesBindings.toString()=== 'sf.notification.config.ses'){
-      //Dynamic calling of ses file
-      //./providers/email/ses
-    }
-    if(pubnubBindings.toString()=== 'sf.notification.config.pubnub'){
-      //Dynamic calling of pubnub file
-      //./providers/push/pubnub
-      import("./providers/push/pubnub").then(({PubNubProvider})=>{
-        console.log(PubNubProvider);
-      }).catch((err) => {
-        console.log("Failed to load moment", err);
-    });
-    }
-    if(fcmBindings.toString()=== 'sf.notification.config.fcm'){
-      //Dynamic calling of fcm file
-      //./providers/push/fcm
-    if(socketBindings.toString()=== 'sf.notification.config.socketio'){
-      //Dynamic calling of socketio file
-      //./providers/push/socketio
-    }
-    if(snsBindings.toString()=== 'sf.notification.config.sns'){
-      //Dynamic calling of sns file
-      //./providers/sms/sns
-    }
-  }
+    async function importFunction() {
+      if(nodemailerBindings!= null){
+        //Dynamic calling of nodemailer file
+        //./providers/email/nodemailer
+        const NodemailerBindings = await import('./providers/email/nodemailer')
+        NodemailerBindings.NodemailerProvider
+      }
+      if(sesBindings!= null){
+        //Dynamic calling of ses file
+        //./providers/email/ses
+        const SESBindings = await import('./providers/email/ses');
+        SESBindings.SesProvider
+      }
+      if(pubnubBindings != null){
+        //Dynamic calling of pubnub file
+        //./providers/push/pubnub
+        const PubnubBindings = await import('./providers/push/pubnub')
+        PubnubBindings.PubNubProvider
+      }
+      if(fcmBindings!= null){
+        //Dynamic calling of fcm file
+        //./providers/push/fcm
+        const FcmBindings = await import('./providers/push/fcm')
+        FcmBindings.FcmProvider
+      }
+      if(socketBindings != null){
+        //Dynamic calling of socketio file
+        //./providers/push/socketio
+        const SocketBindings = await import('./providers/push/socketio')
+        SocketBindings.SocketIOProvider
+      }
+      if(snsBindings!= null){
+        //Dynamic calling of sns file
+        //./providers/sms/sns
+        const SNSBindings = await import('./providers/sms/sns')
+        SNSBindings.SnsProvider
+      }
 
+    }
+    importFunction();
   }
 
   providers?: ProviderMap = {
@@ -68,6 +85,5 @@ export class NotificationsComponent implements Component {
     Binding.bind(PubnubBindings.Config.key).to(null),
     Binding.bind(SocketBindings.Config.key).to(null),
   ];
-
 
 }

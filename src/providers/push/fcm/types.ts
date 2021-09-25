@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { appCheck, AppOptions, auth, database, firestore, installations, instanceId, machineLearning, messaging, projectManagement, remoteConfig, securityRules, storage } from 'firebase-admin';
 import {
   PushMessage,
   PushNotification,
@@ -85,4 +86,85 @@ export const enum FcmSubscriberType {
 export interface FcmConfig {
   dbUrl: string;
   serviceAccountPath: string;
+}
+
+export declare namespace app {
+  /**
+   * A Firebase app holds the initialization information for a collection of
+   * services.
+   *
+   * Do not call this constructor directly. Instead, use
+   * {@link
+   *   https://firebase.google.com/docs/reference/admin/node/admin#.initializeApp
+   *   `admin.initializeApp()`}
+   * to create an app.
+   */
+  interface App {
+      /**
+       * The (read-only) name for this app.
+       *
+       * The default app's name is `"[DEFAULT]"`.
+       *
+       * @example
+       * ```javascript
+       * // The default app's name is "[DEFAULT]"
+       * admin.initializeApp(defaultAppConfig);
+       * console.log(admin.app().name);  // "[DEFAULT]"
+       * ```
+       *
+       * @example
+       * ```javascript
+       * // A named app's name is what you provide to initializeApp()
+       * var otherApp = admin.initializeApp(otherAppConfig, "other");
+       * console.log(otherApp.name);  // "other"
+       * ```
+       */
+      name: string;
+      /**
+       * The (read-only) configuration options for this app. These are the original
+       * parameters given in
+       * {@link
+       *   https://firebase.google.com/docs/reference/admin/node/admin#.initializeApp
+       *   `admin.initializeApp()`}.
+       *
+       * @example
+       * ```javascript
+       * var app = admin.initializeApp(config);
+       * console.log(app.options.credential === config.credential);  // true
+       * console.log(app.options.databaseURL === config.databaseURL);  // true
+       * ```
+       */
+      options: AppOptions;
+      appCheck(): appCheck.AppCheck;
+      auth(): auth.Auth;
+      database(url?: string): database.Database;
+      firestore(): firestore.Firestore;
+      installations(): installations.Installations;
+      /** @deprecated */
+      instanceId(): instanceId.InstanceId;
+      machineLearning(): machineLearning.MachineLearning;
+      messaging(): messaging.Messaging;
+      projectManagement(): projectManagement.ProjectManagement;
+      remoteConfig(): remoteConfig.RemoteConfig;
+      securityRules(): securityRules.SecurityRules;
+      storage(): storage.Storage;
+      /**
+       * Renders this local `FirebaseApp` unusable and frees the resources of
+       * all associated services (though it does *not* clean up any backend
+       * resources). When running the SDK locally, this method
+       * must be called to ensure graceful termination of the process.
+       *
+       * @example
+       * ```javascript
+       * app.delete()
+       *   .then(function() {
+       *     console.log("App deleted successfully");
+       *   })
+       *   .catch(function(error) {
+       *     console.log("Error deleting app:", error);
+       *   });
+       * ```
+       */
+      delete(): Promise<void>;
+  }
 }
